@@ -1,0 +1,114 @@
+---
+title: "Gold Price Vs Oil Price"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setting directory
+```{r}
+setwd("D:/DATA/BAYU/05. OTHERS/Gold Price")
+setwd("Data")
+getwd()
+```
+
+Read data
+```{r}
+gp <-read.csv("Data/Goldvsoil1.csv")
+head(gp)
+```
+
+Modifikasi Data
+```{r}
+library(lubridate)
+library(stringr)
+gp$Month <- dmy(gp$Month)
+gp[,2]<-gsub(",","",gp[,2]) #Menghilangkan koma agar bisa di convert ke numeric
+gp[,2]<-str_sub(gp$Gold.Price,3) #Menghilangkan $ agar bisa di convert ke numeric
+gp[,2]<-as.numeric(gp[,2])
+gp[,3]<-str_sub(gp$Crude.Oil.Price,3)#Menghilangkan $ agar bisa di convert ke numeric
+gp[,3]<-as.numeric(gp[,3])
+head(gp)
+```
+
+
+Grafik
+```{r}
+plot(gp$Gold.Price,gp$Crude.Oil.Price)
+```
+
+
+
+
+
+Model Regresi
+```{r}
+model_gp<-lm(formula=Gold.Price~Crude.Oil.Price,data=gp)
+summary(model_gp)
+```
+
+
+```{r}
+plot(lm(formula=Gold.Price~Crude.Oil.Price,data=gp))
+abline(a=971.1604,b=4.7553)
+```
+
+```{r}
+library(ggplot2)
+ggplot(as.data.frame(gp),aes(x=gp$Gold.Price,y=gp$Crude.Oil.Price))
+```
+
+
+```{r}
+ggplot(gp,aes(x=gp$Gold.Price,y=gp$Crude.Oil.Price)) +
+  geom_point(aes(size=gp$Gold.Price)) +
+  geom_smooth()+ #+
+  #geom_abline(slope = coef(mpg.hp)[2] ,intersect(coef(mpg.hp)[1]),color="gray", lty=2) 
+  
+  #chart furniture
+  labs(
+    title = "Gold Price Vs Crude Oil Price",
+    #subtitle= "taken from mtcar data sets",
+    x = "Gold Price",
+    y= "Crude Oil Price"
+      
+  )
+```
+
+
+Prediksi Gold Price
+```{r}
+crude_oil_price_predict <- data.frame(Crude.Oil.Price=c(100:150))
+gold_price_predict <- predict(model_gp, data.frame(Crude.Oil.Price=crude_oil_price_predict))
+#gold_price_predict
+```
+
+
+```{r}
+df_predict<-data.frame(x=crude_oil_price_predict,y=gold_price_predict)
+df_predict
+```
+
+
+
+Grafik Prediksi Gold Price
+```{r}
+ggplot(df_predict,aes(x=df_predict$y,y=df_predict$Crude.Oil.Price)) +
+  geom_point(aes(size=df_predict$Crude.Oil.Price)) +
+  geom_smooth()+ #+
+  #geom_abline(slope = coef(mpg.hp)[2] ,intersect(coef(mpg.hp)[1]),color="gray", lty=2) 
+  
+  #chart furniture
+  labs(
+    title = "Gold Price Prediction",
+    #subtitle= "taken from mtcar data sets",
+    x = "Gold Price",
+    y= "Crude Oil Price"
+      
+  )
+```
+
+
+
